@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js ≥ 18
+- Docker **or** Node.js ≥ 18 (see sections 2 and 4)
 - A Nextcloud instance (any version with OAuth2 app support — enabled by default since NC 16)
 - A reverse proxy (Apache or nginx) with TLS termination
 
@@ -25,9 +25,44 @@ The server only needs the Nextcloud base URL to validate access tokens. It never
 
 ## 2. Server installation
 
+### Option A — Docker (recommended)
+
 ```bash
 git clone <repo-url>
-cd romme/server
+cd romme-server
+
+# Create your environment file
+cp .env.example .env
+# Edit .env — see "Environment variables" below
+
+# Build the image
+docker build -t romme-server .
+
+# Run the container
+docker run -d \
+  --name romme \
+  --env-file .env \
+  -p 3001:3001 \
+  -v romme-data:/data \
+  --restart unless-stopped \
+  romme-server
+```
+
+The database is stored in the named Docker volume `romme-data` and survives container restarts and image updates. You do not need to set `DB_PATH` in `.env` when using Docker — it defaults to `/data/romme.db` inside the container.
+
+To update to a newer version:
+
+```bash
+docker build -t romme-server .
+docker stop romme && docker rm romme
+docker run -d --name romme --env-file .env -p 3001:3001 -v romme-data:/data --restart unless-stopped romme-server
+```
+
+### Option B — Node.js directly
+
+```bash
+git clone <repo-url>
+cd romme-server
 
 # Install production dependencies only
 npm install --omit=dev
@@ -36,7 +71,9 @@ npm install --omit=dev
 cp .env.example .env
 ```
 
-Edit `.env`:
+### Environment variables
+
+Edit `.env` for either option:
 
 ```bash
 # Generate a strong JWT secret
@@ -47,7 +84,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 NEXTCLOUD_URL=https://your-nextcloud.example.com
 ```
 
-Adjust `PORT`, `SOCKET_PATH`, and `DB_PATH` as needed.
+Adjust `PORT` and `SOCKET_PATH` as needed. `DB_PATH` is only required when running without Docker.
 
 ---
 
@@ -79,7 +116,41 @@ ProxyPassReverse /romme/ http://127.0.0.1:3001/
 
 ## 4. Running the server
 
-### systemd (recommended)
+### Docker (see section 2A)
+
+The `docker run` command in section 2A already keeps the container running. To manage it:
+
+```bash
+docker logs -f romme        # follow logs
+docker restart romme        # restart
+docker stop romme           # stop
+```
+
+### systemd with Docker (autostart on boot)
+
+Create `/etc/systemd/system/romme.service`:
+
+```ini
+[Unit]
+Description=Rommé Game Server
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+ExecStart=docker start -a romme
+ExecStop=docker stop romme
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable romme
+```
+
+### systemd without Docker
 
 Create `/etc/systemd/system/romme.service`:
 
@@ -91,8 +162,8 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/path/to/romme/server
-EnvironmentFile=/path/to/romme/server/.env
+WorkingDirectory=/path/to/romme-server
+EnvironmentFile=/path/to/romme-server/.env
 ExecStart=/usr/bin/node src/index.js
 Restart=on-failure
 RestartSec=5
@@ -107,7 +178,7 @@ sudo systemctl enable --now romme
 sudo journalctl -u romme -f   # follow logs
 ```
 
-### pm2 (alternative)
+### pm2 (alternative, without Docker)
 
 ```bash
 npm install -g pm2

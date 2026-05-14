@@ -23,10 +23,18 @@ The Android app is a separate repository that also needs to be installed on play
 
 ## Quick start
 
+The recommended way to run the server is Docker:
+
+```bash
+cp .env.example .env   # fill in JWT_SECRET and NEXTCLOUD_URL
+docker build -t romme-server .
+docker run -d --name romme --env-file .env -p 3001:3001 -v romme-data:/data --restart unless-stopped romme-server
+```
+
 See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full step-by-step guide covering:
 
 1. Nextcloud OAuth2 app setup
-2. Server installation and environment configuration
+2. Server installation (Docker or Node.js directly)
 3. Apache reverse proxy configuration
 4. Running the server with systemd or pm2
 5. Configuring the Android app
@@ -37,7 +45,7 @@ See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full step-by-step guide covering:
 
 | Layer | Technology |
 |-------|-----------|
-| Runtime | Node.js ≥ 18 |
+| Deployment | Docker (recommended) or Node.js ≥ 18 |
 | Real-time transport | Socket.IO |
 | Authentication | Nextcloud OAuth2 + JWT |
 | Database | SQLite (via better-sqlite3) |
