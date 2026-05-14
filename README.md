@@ -1,3 +1,5 @@
+> Pre-alpha. Not ready for use
+
 # Rommé — Game Server
 
 A real-time multiplayer [Rommé](https://en.wikipedia.org/wiki/Rummy) (German Rummy) server built with Node.js and Socket.IO. Players connect via an Android app and authenticate through their own Nextcloud instance — no third-party accounts or cloud services required.
