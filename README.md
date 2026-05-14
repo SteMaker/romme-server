@@ -1,4 +1,5 @@
 > Pre-alpha. Not ready for use
+> The author does not take any responsibilty for
 
 # Rommé — Game Server
 
@@ -58,6 +59,11 @@ npm test         # runs the Jest test suite
 The server reads configuration from a `.env` file. Copy `.env.example` to `.env` and fill in the required values before starting.
 
 ---
+ ## Disclaimer                                                                                                                                                        
+ 
+ This software is provided "as is", without warranty of any kind. The author accepts no responsibility or liability for any damage, 
+ data loss, security incidents, or other harm arising from the use, deployment, or operation of this server software or the associated
+ Android app. You deploy and run this software entirely at your own risk.  
 
 ## License
 
