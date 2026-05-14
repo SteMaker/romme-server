@@ -1,16 +1,14 @@
-FROM node:20-slim AS builder
+FROM node:20-alpine AS builder
 
 # Build tools needed for better-sqlite3 native compilation
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
 # --- Final image ---
-FROM node:20-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -19,7 +17,7 @@ COPY package.json ./
 COPY src/ ./src/
 
 # Non-root user for security
-RUN useradd -r -s /bin/false romme \
+RUN addgroup -S romme && adduser -S -G romme romme \
     && mkdir -p /data \
     && chown romme /data
 
