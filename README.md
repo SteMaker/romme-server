@@ -1,3 +1,6 @@
+> Pre-alpha. Not ready for use
+> The author does not take any responsibilty for
+
 # Rommé — Game Server
 
 A real-time multiplayer [Rommé](https://en.wikipedia.org/wiki/Rummy) (German Rummy) server built with Node.js and Socket.IO. Players connect via an Android app and authenticate through their own Nextcloud instance — no third-party accounts or cloud services required.
@@ -64,6 +67,11 @@ npm test         # runs the Jest test suite
 The server reads configuration from a `.env` file. Copy `.env.example` to `.env` and fill in the required values before starting.
 
 ---
+ ## Disclaimer                                                                                                                                                        
+ 
+ This software is provided "as is", without warranty of any kind. The author accepts no responsibility or liability for any damage, 
+ data loss, security incidents, or other harm arising from the use, deployment, or operation of this server software or the associated
+ Android app. You deploy and run this software entirely at your own risk.  
 
 ## License
 
