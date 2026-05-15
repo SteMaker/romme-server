@@ -14,13 +14,13 @@ A real-time multiplayer [Rommé](https://en.wikipedia.org/wiki/Rummy) (German Ru
 - A game server you run yourself, on your own hardware or VPS
 - Validates all game moves server-side (card melding, joker rules, scoring)
 - Supports multiple simultaneous rooms and players
-- Authenticates players via Nextcloud OAuth2 — anyone with an account on your Nextcloud can play
+- Authenticates players via Nextcloud app passwords — anyone with an account on your Nextcloud can play, no admin setup required
 
 ## What you also need
 
 The Android app is a separate repository that also needs to be installed on players' devices. It connects to this server and handles the game UI.
 
-> **→ Android app:** [romme-android](https://github.com/stemaker/romme-android)
+> **→ Android app:** [romme-android](https://github.com/SteMaker/romme-android)
 
 ---
 
@@ -36,11 +36,10 @@ docker run -d --name romme --env-file .env -p 3001:3001 -v romme-data:/data --re
 
 See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full step-by-step guide covering:
 
-1. Nextcloud OAuth2 app setup
-2. Server installation (Docker or Node.js directly)
-3. Apache reverse proxy configuration
-4. Running the server with systemd or pm2
-5. Configuring the Android app
+1. Server installation (Docker or Node.js directly)
+2. Apache reverse proxy configuration
+3. Running the server with systemd or pm2
+4. Configuring the Android app
 
 ---
 
@@ -50,7 +49,7 @@ See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full step-by-step guide covering:
 |-------|-----------|
 | Deployment | Docker (recommended) or Node.js ≥ 18 |
 | Real-time transport | Socket.IO |
-| Authentication | Nextcloud OAuth2 + JWT |
+| Authentication | Nextcloud app passwords + JWT |
 | Database | SQLite (via better-sqlite3) |
 | Tests | Jest |
 
@@ -67,11 +66,11 @@ npm test         # runs the Jest test suite
 The server reads configuration from a `.env` file. Copy `.env.example` to `.env` and fill in the required values before starting.
 
 ---
- ## Disclaimer                                                                                                                                                        
+ ## Disclaimer
  
  This software is provided "as is", without warranty of any kind. The author accepts no responsibility or liability for any damage, 
  data loss, security incidents, or other harm arising from the use, deployment, or operation of this server software or the associated
- Android app. You deploy and run this software entirely at your own risk.  
+ Android app. You deploy and run this software entirely at your own risk.
 
 ## License
 

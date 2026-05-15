@@ -3,27 +3,12 @@
 ## Prerequisites
 
 - Docker **or** Node.js ≥ 18 (see sections 2 and 4)
-- A Nextcloud instance (any version with OAuth2 app support — enabled by default since NC 16)
+- A Nextcloud instance
 - A reverse proxy (Apache or nginx) with TLS termination
 
 ---
 
-## 1. Nextcloud OAuth2 app setup
-
-The Android app authenticates players via your Nextcloud instance. You need to register it as an OAuth2 client there.
-
-1. Log into Nextcloud as admin
-2. Go to **Settings → Security → OAuth 2.0 clients**
-3. Click **Add client**, fill in:
-   - **Name:** Rommé
-   - **Redirection URI:** `com.romme://oauth` (or the redirect URI configured in the Android app)
-4. Note the generated **Client ID** and **Client Secret** — these go into the Android app, not the server
-
-The server only needs the Nextcloud base URL to validate access tokens. It never sees the client secret.
-
----
-
-## 2. Server installation
+## 1. Server installation
 
 ### Option A — Docker (recommended)
 
@@ -88,7 +73,7 @@ Adjust `PORT` and `SOCKET_PATH` as needed. `DB_PATH` is only required when runni
 
 ---
 
-## 3. Apache reverse proxy
+## 2. Apache reverse proxy
 
 Enable the required modules if not already active:
 
@@ -114,11 +99,11 @@ ProxyPassReverse /romme/ http://127.0.0.1:3001/
 
 ---
 
-## 4. Running the server
+## 3. Running the server
 
-### Docker (see section 2A)
+### Docker (see section 1A)
 
-The `docker run` command in section 2A already keeps the container running. To manage it:
+The `docker run` command in section 1A already keeps the container running. To manage it:
 
 ```bash
 docker logs -f romme        # follow logs
@@ -189,22 +174,31 @@ pm2 startup   # follow the printed command to enable autostart
 
 ---
 
-## 5. Android app configuration
+## 4. Android app configuration
 
-In the app login screen the player enters:
+Players enter the following in the app login screen:
 
 | Field | Value |
 |-------|-------|
-| Server URL | `https://your-domain.example.com` |
-| Nextcloud URL | `https://your-nextcloud.example.com` |
-| OAuth2 Client ID | The Client ID from step 1 |
-| OAuth2 Client Secret | The Client Secret from step 1 |
+| Server-URL | `https://your-domain.example.com` |
+| Nextcloud-URL | `https://your-nextcloud.example.com` |
+| Nextcloud-Benutzername | Their Nextcloud username |
+| App-Passwort | A Nextcloud app password (see below) |
 
-The player then taps **Login with Nextcloud** and is redirected to Nextcloud's login page. After authenticating there, they are returned to the app automatically.
+### Generating a Nextcloud app password
+
+Each player creates their own app password in Nextcloud — no admin action is required:
+
+1. Log into Nextcloud
+2. Go to **Settings → Security → Devices & sessions**
+3. Scroll to **Create new app password**, enter a name (e.g. "Rommé"), and click **Create**
+4. Copy the displayed password into the app — it is only shown once
+
+App passwords are independent of the account password and can be revoked at any time.
 
 ---
 
-## 6. Health check
+## 5. Health check
 
 ```bash
 curl https://your-domain.example.com/romme/health

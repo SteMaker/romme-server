@@ -21,13 +21,11 @@ class User {
   }
 }
 
-/**
- * Validiert ein Nextcloud OAuth2 Access-Token und gibt Nutzerinfos zurück.
- */
-async function validateNextcloudToken(accessToken) {
+async function validateNextcloudAppPassword(username, password) {
+  const credentials = Buffer.from(`${username}:${password}`).toString('base64');
   const response = await axios.get(`${NEXTCLOUD_URL}/ocs/v2.php/cloud/user`, {
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Basic ${credentials}`,
       'OCS-APIREQUEST': 'true',
       Accept: 'application/json',
     },
@@ -45,13 +43,12 @@ async function validateNextcloudToken(accessToken) {
  *
  * Akzeptiert entweder:
  * 1. Ein JWT (für bestehende Sessions)
- * 2. Ein Nextcloud OAuth2 Access-Token (für neuen Login)
+ * 2. Nextcloud-Benutzername + App-Passwort (für neuen Login)
  */
 async function authenticateSocket(socket, next) {
   try {
-    const { token, nextcloudToken } = socket.handshake.auth;
+    const { token, nextcloudUsername, nextcloudPassword } = socket.handshake.auth;
 
-    // Variante 1: Bestehendes JWT
     if (token) {
       const payload = jwt.verify(token, JWT_SECRET);
       socket.user = new User(payload.userId, payload.displayName, payload.nextcloudId);
@@ -59,11 +56,9 @@ async function authenticateSocket(socket, next) {
       return next();
     }
 
-    // Variante 2: Nextcloud OAuth2 Token
-    if (nextcloudToken) {
-      const ncUser = await validateNextcloudToken(nextcloudToken);
+    if (nextcloudUsername && nextcloudPassword) {
+      const ncUser = await validateNextcloudAppPassword(nextcloudUsername, nextcloudPassword);
 
-      // Nutzer in DB anlegen/aktualisieren
       const db = getDb();
       db.prepare(`
         INSERT INTO users (id, nextcloud_id, display_name, last_login)
@@ -73,7 +68,6 @@ async function authenticateSocket(socket, next) {
           last_login = CURRENT_TIMESTAMP
       `).run(ncUser.nextcloudId, ncUser.nextcloudId, ncUser.displayName);
 
-      // JWT für zukünftige Verbindungen erstellen
       const jwtToken = jwt.sign(
         {
           userId: ncUser.nextcloudId,
@@ -87,7 +81,6 @@ async function authenticateSocket(socket, next) {
       socket.user = new User(ncUser.nextcloudId, ncUser.displayName, ncUser.nextcloudId);
       socket.user.socketId = socket.id;
 
-      // JWT an Client senden damit er es speichern kann
       socket.emit('auth:token', { token: jwtToken });
 
       return next();
@@ -100,4 +93,4 @@ async function authenticateSocket(socket, next) {
   }
 }
 
-module.exports = { authenticateSocket, User, validateNextcloudToken };
+module.exports = { authenticateSocket, User, validateNextcloudAppPassword };
